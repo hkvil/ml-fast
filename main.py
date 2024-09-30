@@ -8,6 +8,7 @@ from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
+from database import init_db, insert_class_names,get_class_name
 
 app = FastAPI()
 
@@ -23,6 +24,8 @@ MODEL_DIR.mkdir(parents=True, exist_ok=True)
 # Initialize the available models dictionary
 AVAILABLE_MODELS = {}
 
+# Initialize the database
+init_db()
 
 def load_models():
     """Load all model names from the model directory into AVAILABLE_MODELS."""
@@ -47,7 +50,7 @@ def load_selected_model(model_name: str):
         raise ValueError(f"Model '{model_name}' not found.")
 
 
-def predict_image(model, path: str):
+def predict_image(model,model_name, path: str):
     image_path = path
 
     input_shape = model.input_shape
@@ -57,7 +60,9 @@ def predict_image(model, path: str):
     x_array = image.img_to_array(pict)
     x_array = np.expand_dims(x_array, axis=0)
     prediction = model.predict(np.vstack([x_array]), batch_size=18)
-    return str(np.argmax(prediction))
+    predicted_class = np.argmax(prediction)
+    class_name = get_class_name(model_name, predicted_class)
+    return str(class_name)
 
 
 @app.post("/upload/")
@@ -78,7 +83,7 @@ async def upload_image(file: UploadFile = File(...), model_name: str = Form(...)
         buffer.write(image_data)
         
     # Perform prediction
-    predicted_class = predict_image(model, f"./static/uploads/{file.filename}")
+    predicted_class = predict_image(model,model_name, f"./static/uploads/{file.filename}")
 
     return {
         "info": f"file '{file.filename}' saved at '{file_location}'",
@@ -91,7 +96,7 @@ async def upload_image(file: UploadFile = File(...), model_name: str = Form(...)
 
 
 @app.post("/add_model/")
-async def add_model(file: UploadFile = File(...), model_name: str = Form(...)):
+async def add_model(file: UploadFile = File(...), model_name: str = Form(...),class_names: str = Form(...)):
     """API to upload and add a new model."""
     # Ensure the file is either .h5 or .keras
     if not (file.filename.endswith(".h5") or file.filename.endswith(".keras")):
@@ -104,8 +109,16 @@ async def add_model(file: UploadFile = File(...), model_name: str = Form(...)):
     
     # Add the model to the available models dictionary
     AVAILABLE_MODELS[model_name] = str(model_file_path)
+    
+    # Save class names to the database
+    class_name_list = class_names.split(",")  # Convert the comma-separated string to a list
+    insert_class_names(model_name, class_name_list)
 
-    return {"info": f"Model '{model_name}' has been successfully uploaded and added."}
+    return {
+        "info": f"Model '{model_name}' has been successfully uploaded and added.",
+        "model_file_path": str(model_file_path),
+        "class_names": class_name_list
+    }
 
 
 @app.get("/models/")
@@ -139,6 +152,7 @@ async def main():
         <input name="model_name" type="text">
         <br><br>
         <input name="file" type="file">
+        <input name="class_names" type="text" placeholder="Enter class names (comma-separated)" required>
         <input type="submit">
     </form>
     </body>
