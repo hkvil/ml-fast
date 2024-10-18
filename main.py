@@ -4,14 +4,17 @@ from tensorflow.keras.models import load_model
 from PIL import Image
 import io
 import os
-from fastapi import FastAPI, File, Form, UploadFile, HTTPException
+from fastapi import FastAPI, File, Form, Request, UploadFile, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from database import init_db, insert_class_names,get_class_name
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
+
+templates = Jinja2Templates(directory="templates")
 
 origins = [
     "*",
@@ -139,35 +142,10 @@ async def get_models():
     """API to retrieve the list of available models."""
     return {"available_models": list(AVAILABLE_MODELS.keys())}
 
-
-@app.get("/")
-async def main():
+@app.get("/", response_class=HTMLResponse)
+async def main(request: Request):
     """Main HTML form to upload an image and select a model."""
     load_models()  # Reload models in case any have been added
-    model_options = "".join([f'<option value="{model}">{model}</option>' for model in AVAILABLE_MODELS.keys()])
+    model_options = AVAILABLE_MODELS.keys()
     
-    content = f"""
-    <body>
-    <h1>Upload an image</h1>
-    <form action="/upload/" enctype="multipart/form-data" method="post">
-        <label for="model_name">Select Model:</label>
-        <select name="model_name" id="model_name">
-            {model_options}
-        </select>
-        <br><br>
-        <input name="file" type="file">
-        <input type="submit">
-    </form>
-    
-    <h2>Add a new model</h2>
-    <form action="/add_model/" enctype="multipart/form-data" method="post">
-        <label for="model_name">Model Name:</label>
-        <input name="model_name" type="text">
-        <br><br>
-        <input name="file" type="file">
-        <input name="class_names" type="text" placeholder="Enter class names (comma-separated)" required>
-        <input type="submit">
-    </form>
-    </body>
-    """
-    return HTMLResponse(content=content)
+    return templates.TemplateResponse("index.html", {"request": request, "model_options": model_options})

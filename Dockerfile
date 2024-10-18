@@ -14,9 +14,6 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 COPY ./main.py /code/
 
 #
-COPY ./RPC_Model.h5 /code/
-
-#
 RUN mkdir /code/static
 
 # 
