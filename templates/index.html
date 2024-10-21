@@ -1,33 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Upload an Image</title>
-    <link rel="stylesheet" href="/static/styles.css">
-</head>
-<body>
-    <h1>Upload an image</h1>
-    <form action="/upload/" enctype="multipart/form-data" method="post">
-        <label for="model_name">Select Model:</label>
-        <select name="model_name" id="model_name">
+    <link rel="stylesheet" href="/static/styles.css" />
+    <link href="output.css" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body>
+    <div class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-lg mt-10">
+      <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">
+        Upload an Image
+      </h1>
+
+      <form
+        action="/upload/"
+        enctype="multipart/form-data"
+        method="post"
+        class="space-y-4"
+      >
+        <div>
+          <label for="model_name" class="block text-gray-700 font-semibold"
+            >Select Model:</label
+          >
+          <select
+            name="model_name"
+            id="model_name"
+            class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2"
+          >
             {% for model in model_options %}
-                <option value="{{ model }}">{{ model }}</option>
+            <option value="{{ model }}">{{ model }}</option>
             {% endfor %}
-        </select>
-        <br><br>
-        <input name="file" type="file">
-        <input type="submit">
-    </form>
-    
-    <h2>Add a new model</h2>
-    <form action="/add_model/" enctype="multipart/form-data" method="post">
-        <label for="model_name">Model Name:</label>
-        <input name="model_name" type="text">
-        <br><br>
-        <input name="file" type="file">
-        <input name="class_names" type="text" placeholder="Enter class names (comma-separated)" required>
-        <input type="submit">
-    </form>
-</body>
+          </select>
+        </div>
+
+        <div>
+          <label for="file" class="block text-gray-700 font-semibold"
+            >Upload Image:</label
+          >
+          <input
+            name="file"
+            type="file"
+            class="mt-1 block w-full text-gray-900 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2"
+          />
+        </div>
+
+        <div class="text-center">
+          <input
+            type="submit"
+            value="Upload"
+            class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-md shadow-md hover:bg-indigo-500 transition"
+          />
+        </div>
+      </form>
+    </div>
+
+    <div class="max-w-lg mx-auto bg-white p-6 mt-10 rounded-lg shadow-lg mb-10">
+      <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">
+        Add a New Model
+      </h2>
+
+      <form
+        action="/add_model/"
+        enctype="multipart/form-data"
+        method="post"
+        class="space-y-4"
+      >
+        <div>
+          <label for="model_name" class="block text-gray-700 font-semibold"
+            >Model Name:</label
+          >
+          <input
+            name="model_name"
+            type="text"
+            class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2"
+            placeholder="Enter model name"
+          />
+        </div>
+
+        <div>
+          <label for="file" class="block text-gray-700 font-semibold"
+            >Upload Model File:</label
+          >
+          <input
+            name="file"
+            type="file"
+            class="mt-1 block w-full text-gray-900 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2"
+          />
+        </div>
+
+        <div>
+          <label for="class_names" class="block text-gray-700 font-semibold"
+            >Class Names:</label
+          >
+          <input
+            name="class_names"
+            type="text"
+            class="mt-1 block w-full bg-gray-50 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 p-2"
+            placeholder="Enter class names (comma-separated)"
+          />
+        </div>
+
+        <div class="text-center">
+          <input
+            type="submit"
+            value="Add Model"
+            class="bg-indigo-600 text-white font-bold py-2 px-4 rounded-md shadow-md hover:bg-indigo-500 transition"
+          />
+        </div>
+      </form>
+    </div>
+  </body>
 </html>
